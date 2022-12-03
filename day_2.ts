@@ -2,14 +2,14 @@ import { assertEquals } from "https://deno.land/std@0.167.0/testing/asserts.ts";
 import { runPart } from "https://deno.land/x/aocd@v1.1.1/mod.ts";
 
 interface MatchRecord {
-  opponentShapeCode: string;
-  ownShapeCode: string;
+  opponentCode: string;
+  ownCode: string;
 }
 
 function parse(input: string): MatchRecord[] {
   return input.trimEnd().split("\n").map((line) => {
-    const [opponentShapeCode, ownShapeCode] = line.split(" ");
-    return { opponentShapeCode, ownShapeCode };
+    const [opponentCode, ownCode] = line.split(" ");
+    return { opponentCode, ownCode };
   });
 }
 
@@ -78,21 +78,58 @@ function shapeCodeToShape(shapeCode: string): Shape {
 function part1(input: string): number {
   const matches = parse(input);
   const scores = matches.map((match) => {
-    const opponentShape = shapeCodeToShape(match.opponentShapeCode);
-    const ownShape = shapeCodeToShape(match.ownShapeCode);
+    const opponentShape = shapeCodeToShape(match.opponentCode);
+    const ownShape = shapeCodeToShape(match.ownCode);
     return matchScore(opponentShape, ownShape);
   });
   return scores.reduce((sum, score) => sum + score, 0);
 }
 
-// function part2(input: string): number {
-//   const matches = parse(input);
-//   throw new Error("TODO");
-// }
+function ownShapeFromOpponentShapeAndOwnCode(
+  opponentShape: Shape,
+  ownCode: string,
+): Shape {
+  if (ownCode === "Y") {
+    return opponentShape;
+  }
+  switch (opponentShape) {
+    case "rock":
+      if (ownCode === "X") {
+        return "scissors";
+      } else {
+        return "paper";
+      }
+    case "paper":
+      if (ownCode === "X") {
+        return "rock";
+      } else {
+        return "scissors";
+      }
+    case "scissors":
+      if (ownCode === "X") {
+        return "paper";
+      } else {
+        return "rock";
+      }
+  }
+}
+
+function part2(input: string): number {
+  const matches = parse(input);
+  const scores = matches.map((match) => {
+    const opponentShape = shapeCodeToShape(match.opponentCode);
+    const ownShape = ownShapeFromOpponentShapeAndOwnCode(
+      opponentShape,
+      match.ownCode,
+    );
+    return matchScore(opponentShape, ownShape);
+  });
+  return scores.reduce((sum, score) => sum + score, 0);
+}
 
 if (import.meta.main) {
   runPart(2022, 2, 1, part1);
-  // runPart(2022, 2, 2, part2);
+  runPart(2022, 2, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -105,6 +142,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 15);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 12);
+});
