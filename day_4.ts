@@ -25,6 +25,10 @@ function doesEitherRangeContainTheOther(range1: Range, range2: Range): boolean {
     range2.start <= range1.start && range2.end >= range1.end;
 }
 
+function doRangesOverlap(range1: Range, range2: Range): boolean {
+  return range1.start <= range2.end && range2.start <= range1.end;
+}
+
 function part1(input: string): number {
   const pairs = parse(input);
   const pairsWithSuperset = pairs.filter(([range1, range2]) =>
@@ -33,14 +37,17 @@ function part1(input: string): number {
   return pairsWithSuperset.length;
 }
 
-// function part2(input: string): number {
-//   const pairs = parse(input);
-//   throw new Error("TODO");
-// }
+function part2(input: string): number {
+  const pairs = parse(input);
+  const pairsWithOverlap = pairs.filter(([range1, range2]) =>
+    doRangesOverlap(range1, range2)
+  );
+  return pairsWithOverlap.length;
+}
 
 if (import.meta.main) {
   runPart(2022, 4, 1, part1);
-  // runPart(2022, 4, 2, part2);
+  runPart(2022, 4, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -56,6 +63,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 2);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 4);
+});
