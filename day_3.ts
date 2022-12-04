@@ -1,9 +1,10 @@
+import { chunk } from "https://deno.land/std@0.167.0/collections/chunk.ts";
 import { assertEquals } from "https://deno.land/std@0.167.0/testing/asserts.ts";
 import { runPart } from "https://deno.land/x/aocd@v1.1.1/mod.ts";
 
-type Rucksack = [string, string];
+type RucksackCompartments = [string, string];
 
-function parse(input: string): Rucksack[] {
+function part1Parse(input: string): RucksackCompartments[] {
   return input
     .trimEnd()
     .split("\n")
@@ -13,7 +14,7 @@ function parse(input: string): Rucksack[] {
     ]);
 }
 
-function scoreRucksack(rucksack: Rucksack): number {
+function scoreRucksack(rucksack: RucksackCompartments): number {
   let score = 0;
 
   const firstCompartmentLetters = new Set<string>();
@@ -35,19 +36,37 @@ function scoreRucksack(rucksack: Rucksack): number {
 }
 
 function part1(input: string): number {
-  const rucksacks = parse(input);
-  const scores = rucksacks.map(scoreRucksack);
+  const rucksackCompartments = part1Parse(input);
+  const scores = rucksackCompartments.map(scoreRucksack);
   return scores.reduce((sum, score) => sum + score, 0);
 }
 
-// function part2(input: string): number {
-//   const rucksacks = parse(input);
-//   throw new Error("TODO");
-// }
+function scoreGroup(group: string[]): number {
+  let lettersSeenPreviously = new Set<string>(group[0]);
+  for (const rucksack of group.slice(1)) {
+    const currentCandidates = new Set<string>();
+    for (const char of rucksack) {
+      if (lettersSeenPreviously.has(char)) {
+        currentCandidates.add(char);
+      }
+    }
+    lettersSeenPreviously = currentCandidates;
+  }
+  return [...lettersSeenPreviously]
+    .map(letterPriority)
+    .reduce((sum, score) => sum + score, 0);
+}
+
+function part2(input: string): number {
+  const rucksacks = input.trimEnd().split("\n");
+  const groups = chunk(rucksacks, 3);
+  const scores = groups.map(scoreGroup);
+  return scores.reduce((sum, score) => sum + score, 0);
+}
 
 if (import.meta.main) {
   runPart(2022, 3, 1, part1);
-  // runPart(2022, 3, 2, part2);
+  runPart(2022, 3, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -63,9 +82,9 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 157);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 70);
+});
 
 function letterPriority(letter: string): number {
   const charCode = letter.charCodeAt(0);
