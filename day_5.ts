@@ -87,14 +87,24 @@ function part1(input: string): string {
   return stacks.map((stack) => stack[stack.length - 1]).join("");
 }
 
-// function part2(input: string): number {
-//   const challenge = parse(input);
-//   throw new Error("TODO");
-// }
+function part2(input: string): string {
+  const challenge = parse(input);
+  const stacks: Stack[] = structuredClone(challenge.startingStacks);
+  for (const procedure of challenge.procedures) {
+    // execute procedure, moving `procedure.amount` items at a time
+    const items = stacks[procedure.source - 1].splice(
+      stacks[procedure.source - 1].length - procedure.amount,
+      procedure.amount,
+    );
+    stacks[procedure.destination - 1].push(...items);
+  }
+  // return a string made up of the letters at the end of each stack
+  return stacks.map((stack) => stack[stack.length - 1]).join("");
+}
 
 if (import.meta.main) {
   runPart(2022, 5, 1, part1);
-  // runPart(2022, 5, 2, part2);
+  runPart(2022, 5, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -113,6 +123,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), "CMZ");
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), "MCD");
+});
