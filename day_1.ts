@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.167.0/testing/asserts.ts";
-import { runPart } from "https://deno.land/x/aocd@v1.2.0/mod.ts";
+import { runPart } from "https://deno.land/x/aocd@v1.2.1/mod.ts";
 
 interface Elf {
   food: number[];
