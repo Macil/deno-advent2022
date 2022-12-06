@@ -5,8 +5,7 @@ function parse(input: string) {
   return input.trimEnd();
 }
 
-function part1(input: string): number {
-  const buffer = parse(input);
+function findPositionOfMarkerEnd(buffer: string, markerLength: number): number {
   const lettersInPacketCounts = new Map<string, number>();
   function countLetter(letter: string) {
     const currentCount = lettersInPacketCounts.get(letter) ?? 0;
@@ -22,26 +21,31 @@ function part1(input: string): number {
   }
   for (let i = 0; i < buffer.length; i++) {
     countLetter(buffer[i]);
-    if (i > 2) {
-      if (i > 3) {
-        removeLetter(buffer[i - 4]);
+    if (i > markerLength - 2) {
+      if (i > markerLength - 1) {
+        removeLetter(buffer[i - markerLength]);
       }
-      if (lettersInPacketCounts.size === 4) {
+      if (lettersInPacketCounts.size === markerLength) {
         return i + 1;
       }
     }
   }
-  throw new Error("Failed to find start of packet");
+  throw new Error("Failed to find marker");
 }
 
-// function part2(input: string): number {
-//   const items = parse(input);
-//   throw new Error("TODO");
-// }
+function part1(input: string): number {
+  const buffer = parse(input);
+  return findPositionOfMarkerEnd(buffer, 4);
+}
+
+function part2(input: string): number {
+  const buffer = parse(input);
+  return findPositionOfMarkerEnd(buffer, 14);
+}
 
 if (import.meta.main) {
   runPart(2022, 6, 1, part1);
-  // runPart(2022, 6, 2, part2);
+  runPart(2022, 6, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -52,6 +56,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 7);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 19);
+});
