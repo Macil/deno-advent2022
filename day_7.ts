@@ -141,14 +141,23 @@ function part1(input: string): number {
     .reduce((sum, [, size]) => sum + size, 0);
 }
 
-// function part2(input: string): number {
-//   const parsedLines = parse(input);
-//   throw new Error("TODO");
-// }
+function part2(input: string): number {
+  const parsedLines = parse(input);
+  const root = translateParsedLinesToFilesystem(parsedLines);
+  const sizes = calculateSizesOfAllDirectories(root);
+
+  const totalSize = sizes.get(root)!;
+  const targetSize = 40_000_000;
+  const needToDelete = totalSize - targetSize;
+
+  return Math.min(
+    ...Array.from(sizes.values()).filter((size) => size >= needToDelete),
+  );
+}
 
 if (import.meta.main) {
   runPart(2022, 7, 1, part1);
-  // runPart(2022, 7, 2, part2);
+  runPart(2022, 7, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -181,6 +190,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 95437);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 24933642);
+});
