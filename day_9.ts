@@ -29,14 +29,12 @@ function isNeighbor(a: Coordinate, b: Coordinate): boolean {
   return Math.abs(a.x - b.x) <= 1 && Math.abs(a.y - b.y) <= 1;
 }
 
-function part1(input: string): number {
-  const instructions = parse(input);
-
+function countTailPositionsAfterInstructions(
+  rope: Rope,
+  instructions: Instruction[],
+): number {
   // Set contains values like "3,4"
   const tailSeenPositions = new Set<string>(["0,0"]);
-
-  // Use map to create coordinate objects instead of using fill, so each coordinate is a unique object
-  const rope: Rope = Array(2).fill(null).map(() => ({ x: 0, y: 0 }));
 
   for (const { direction, distance } of instructions) {
     for (let step = 0; step < distance; step++) {
@@ -89,14 +87,27 @@ function part1(input: string): number {
   return tailSeenPositions.size;
 }
 
-// function part2(input: string): number {
-//   const instructions = parse(input);
-//   throw new Error("TODO");
-// }
+function part1(input: string): number {
+  const instructions = parse(input);
+
+  // Use map to create coordinate objects instead of using fill, so each coordinate is a unique object
+  const rope: Rope = Array(2).fill(null).map(() => ({ x: 0, y: 0 }));
+
+  return countTailPositionsAfterInstructions(rope, instructions);
+}
+
+function part2(input: string): number {
+  const instructions = parse(input);
+
+  // Use map to create coordinate objects instead of using fill, so each coordinate is a unique object
+  const rope: Rope = Array(10).fill(null).map(() => ({ x: 0, y: 0 }));
+
+  return countTailPositionsAfterInstructions(rope, instructions);
+}
 
 if (import.meta.main) {
   runPart(2022, 9, 1, part1);
-  // runPart(2022, 9, 2, part2);
+  runPart(2022, 9, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -114,6 +125,18 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 13);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 1);
+
+  const LARGER_INPUT = `\
+R 5
+U 8
+L 8
+D 3
+R 17
+D 10
+L 25
+U 20
+`;
+  assertEquals(part2(LARGER_INPUT), 36);
+});
