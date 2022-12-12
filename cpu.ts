@@ -18,7 +18,7 @@ export class Machine {
    * The machine has successfully executed `cycle - 1` cycles already.
    */
   public cycle = 1;
-  #currentInstructionBeganOnCycle = 0;
+  #currentInstructionBeganOnCycle = 1;
   #complete = false;
   #instructions: Instruction[];
 

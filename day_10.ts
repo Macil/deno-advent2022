@@ -205,8 +205,7 @@ noop
 `;
 
 Deno.test("part1", () => {
-  // The challenge page says the sample answer is 13140, but it's wrong.
-  assertEquals(part1(TEST_INPUT), 13360);
+  assertEquals(part1(TEST_INPUT), 13140);
 });
 
 // Deno.test("part2", () => {
