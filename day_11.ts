@@ -42,6 +42,7 @@ function parseOperationFromString(operation: string): Operation {
 interface Test {
   label: string;
   fn(value: number): boolean;
+  divisor: number;
 }
 
 function parseTest(test: string): Test {
@@ -54,6 +55,7 @@ function parseTest(test: string): Test {
   return {
     label: test,
     fn: (value: number) => value % divisor === 0,
+    divisor,
   };
 }
 
@@ -84,15 +86,27 @@ function parse(input: string): Monkey[] {
   });
 }
 
-function part1(input: string): number {
-  const monkeys = parse(input);
+function run(
+  monkeys: Monkey[],
+  divisor: number,
+  modulus: number | null,
+  rounds: number,
+): number {
   const monkeyInspectionCounters = new Map(
     monkeys.map((monkey) => [monkey, 0]),
   );
-  for (let round = 0; round < 20; round++) {
+  for (let round = 0; round < rounds; round++) {
     for (const monkey of monkeys) {
       for (const worryLevel of monkey.items) {
-        const newWorryLevel = Math.floor(monkey.operation.fn(worryLevel) / 3);
+        let newWorryLevel = Math.floor(
+          monkey.operation.fn(worryLevel) / divisor,
+        );
+        if (!Number.isFinite(newWorryLevel)) {
+          throw new Error("Worry level overflowed");
+        }
+        if (modulus != null) {
+          newWorryLevel %= modulus;
+        }
         const dest = monkey.test.fn(newWorryLevel)
           ? monkey.destIfTrue
           : monkey.destIfFalse;
@@ -112,14 +126,23 @@ function part1(input: string): number {
   return sorted[0][1] * sorted[1][1];
 }
 
-// function part2(input: string): number {
-//   const monkeys = parse(input);
-//   throw new Error("TODO");
-// }
+function part1(input: string): number {
+  const monkeys = parse(input);
+  return run(monkeys, 3, null, 20);
+}
+
+function part2(input: string): number {
+  const monkeys = parse(input);
+  const modulus = monkeys.map((monkey) => monkey.test.divisor).reduce(
+    (a, b) => a * b,
+    1,
+  );
+  return run(monkeys, 1, modulus, 10000);
+}
 
 if (import.meta.main) {
   runPart(2022, 11, 1, part1);
-  // runPart(2022, 11, 2, part2);
+  runPart(2022, 11, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -156,6 +179,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 10605);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 2713310158);
+});
