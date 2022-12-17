@@ -43,30 +43,17 @@ function heightAt(map: Map, pos: Pos): number {
 
 function* neighbors(map: Map, pos: Pos): Iterable<Pos> {
   const { x, y } = pos;
-  const canReachHeight = heightAt(map, pos) + 1;
   if (x > 0) {
-    const left = { x: x - 1, y };
-    if (heightAt(map, left) <= canReachHeight) {
-      yield left;
-    }
+    yield { x: x - 1, y };
   }
-  if (x < map.heightMap[0].length - 1) {
-    const right = { x: x + 1, y };
-    if (heightAt(map, right) <= canReachHeight) {
-      yield right;
-    }
+  if (x < map.heightMap[y].length - 1) {
+    yield { x: x + 1, y };
   }
   if (y > 0) {
-    const up = { x, y: y - 1 };
-    if (heightAt(map, up) <= canReachHeight) {
-      yield up;
-    }
+    yield { x, y: y - 1 };
   }
   if (y < map.heightMap.length - 1) {
-    const down = { x, y: y + 1 };
-    if (heightAt(map, down) <= canReachHeight) {
-      yield down;
-    }
+    yield { x, y: y + 1 };
   }
 }
 
@@ -75,8 +62,11 @@ function part1(input: string): number {
   const result = aStar({
     start: map.start,
     *successors(pos: Pos) {
+      const canReachHeight = heightAt(map, pos) + 1;
       for (const neighbor of neighbors(map, pos)) {
-        yield [neighbor, 1];
+        if (heightAt(map, neighbor) <= canReachHeight) {
+          yield [neighbor, 1];
+        }
       }
     },
     heuristic: (pos: Pos) =>
@@ -94,14 +84,31 @@ function part1(input: string): number {
   return cost;
 }
 
-// function part2(input: string): number {
-//   const items = parse(input);
-//   throw new Error("TODO");
-// }
+function part2(input: string): number {
+  const map = parse(input);
+  const result = aStar({
+    start: map.end,
+    *successors(pos: Pos) {
+      const minimumNeighborHeight = heightAt(map, pos) - 1;
+      for (const neighbor of neighbors(map, pos)) {
+        if (heightAt(map, neighbor) >= minimumNeighborHeight) {
+          yield [neighbor, 1];
+        }
+      }
+    },
+    heuristic: (pos: Pos) =>
+      // Amount of downward steps needed
+      heightAt(map, pos),
+    success: (pos: Pos) => heightAt(map, pos) === 0,
+    key: (pos: Pos) => `${pos.x},${pos.y}`,
+  });
+  const [_path, cost] = result!;
+  return cost;
+}
 
 if (import.meta.main) {
   runPart(2022, 12, 1, part1);
-  // runPart(2022, 12, 2, part2);
+  runPart(2022, 12, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -116,6 +123,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 31);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 29);
+});
