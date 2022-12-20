@@ -61,14 +61,29 @@ function part1(input: string): number {
   return sortedIndexesSum;
 }
 
-// function part2(input: string): number {
-//   const packetPairs = parse(input);
-//   throw new Error("TODO");
-// }
+function part2(input: string): number {
+  const packetPairs = parse(input);
+  const allPackets = packetPairs.flatMap((packetPair) => [
+    packetPair.left,
+    packetPair.right,
+  ]);
+
+  // add divider packets
+  const firstDivider = [[2]];
+  const secondDivider = [[6]];
+  allPackets.push(firstDivider, secondDivider);
+
+  allPackets.sort(comparePacketValues);
+
+  const firstDividerIndex = allPackets.indexOf(firstDivider) + 1;
+  const secondDividerIndex = allPackets.indexOf(secondDivider) + 1;
+
+  return firstDividerIndex * secondDividerIndex;
+}
 
 if (import.meta.main) {
   runPart(2022, 13, 1, part1);
-  // runPart(2022, 13, 2, part2);
+  runPart(2022, 13, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -101,6 +116,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 13);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 140);
+});
