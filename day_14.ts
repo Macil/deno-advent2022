@@ -1,6 +1,7 @@
 import { parse } from "https://deno.land/std@0.167.0/flags/mod.ts";
 import { assertEquals } from "https://deno.land/std@0.167.0/testing/asserts.ts";
 import { runPart } from "https://deno.land/x/aocd@v1.3.0/mod.ts";
+import { createCanvas } from "https://deno.land/x/canvas@v1.4.1/mod.ts";
 
 type CellState = undefined | "wall" | "sand" | "source";
 
@@ -76,14 +77,15 @@ class Board {
     }, 0);
   }
 
-  printToConsole() {
+  print() {
     const minX = Math.min(
       ...this.values.map((row) => Math.min(...Object.keys(row).map(Number))),
     ) - 2;
     const maxX = Math.max(
       ...this.values.map((row) => Math.max(...Object.keys(row).map(Number))),
     ) + 2;
-    for (let y = 0; y < this.values.length + 1; y++) {
+    const maxY = this.values.length;
+    for (let y = 0; y <= maxY; y++) {
       const lineParts: string[] = [];
       for (let x = minX; x <= maxX; x++) {
         const cell = this.get(x, y);
@@ -100,6 +102,47 @@ class Board {
       const line = lineParts.join("");
       console.log(line);
     }
+  }
+
+  async saveToImage(filename: string) {
+    const minX = Math.min(
+      ...this.values.map((row) => Math.min(...Object.keys(row).map(Number))),
+    ) - 2;
+    const maxX = Math.max(
+      ...this.values.map((row) => Math.max(...Object.keys(row).map(Number))),
+    ) + 2;
+    const maxY = this.values.length;
+
+    const cellHeight = 8;
+    const cellWidth = 8;
+
+    const canvas = createCanvas(
+      (maxX - minX + 1) * cellWidth,
+      (maxY + 1) * cellHeight,
+    );
+    const ctx = canvas.getContext("2d");
+
+    for (let y = 0; y <= maxY; y++) {
+      for (let x = minX; x <= maxX; x++) {
+        const cell = this.get(x, y);
+        if (cell !== undefined) {
+          if (cell === "wall") {
+            ctx.fillStyle = "gray";
+          } else if (cell === "sand") {
+            ctx.fillStyle = "yellow";
+          } else if (cell === "source") {
+            ctx.fillStyle = "blue";
+          }
+          ctx.fillRect(
+            (x - minX) * cellWidth,
+            y * cellHeight,
+            cellWidth,
+            cellHeight,
+          );
+        }
+      }
+    }
+    await Deno.writeFile(filename, canvas.toBuffer());
   }
 }
 
@@ -154,13 +197,17 @@ function part1(input: string): number {
   return board.countSand();
 }
 
-function part2(input: string): number {
+async function part2(input: string): Promise<number> {
   const board = parseBoard(input, true);
   while (board.step()) {
     // run until nothing changes
   }
-  if (parse(Deno.args).printToConsole) {
-    board.printToConsole();
+  if (parse(Deno.args).print) {
+    board.print();
+  }
+  const filename = parse(Deno.args).saveToImage;
+  if (typeof filename === "string") {
+    await board.saveToImage(filename);
   }
   return board.countSand();
 }
@@ -179,6 +226,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 24);
 });
 
-Deno.test("part2", () => {
-  assertEquals(part2(TEST_INPUT), 93);
+Deno.test("part2", async () => {
+  assertEquals(await part2(TEST_INPUT), 93);
 });
