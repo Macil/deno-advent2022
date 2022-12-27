@@ -4,18 +4,21 @@ import { runPart } from "https://deno.land/x/aocd@v1.3.0/mod.ts";
 type CellState = undefined | "wall" | "sand" | "source";
 
 class Board {
-  values: CellState[][] = [];
-  source: Position | undefined;
-  lowestY = 0;
+  private values: CellState[][] = [];
+  private source: Position | undefined;
+  private lowestY = 0;
+
+  constructor(private hasFloor: boolean) {
+  }
 
   get(x: number, y: number): CellState {
+    if (this.hasFloor && y === this.lowestY + 2) {
+      return "wall";
+    }
     return this.values[y]?.[x];
   }
 
   set(x: number, y: number, value: CellState): void {
-    if (y > this.lowestY) {
-      this.lowestY = y;
-    }
     if (value === "source") {
       this.source = { x, y };
     }
@@ -25,12 +28,19 @@ class Board {
     this.values[y][x] = value;
   }
 
+  setLowestY() {
+    this.lowestY = this.values.length - 1;
+  }
+
   /** @returns true if anything changed, false if new sand fell off */
   step(): boolean {
     // find spot to place new sand
+    if (!this.source) {
+      throw new Error("No source");
+    }
     const candidate = structuredClone(this.source);
     while (true) {
-      if (candidate.y === this.lowestY) {
+      if (!this.hasFloor && candidate.y === this.lowestY) {
         // sand must be falling off the edge
         return false;
       }
@@ -50,7 +60,8 @@ class Board {
       }
       break;
     }
-    if (this.get(candidate.x, candidate.y) === undefined) {
+    const candidateCell = this.get(candidate.x, candidate.y);
+    if (candidateCell === undefined || candidateCell === "source") {
       this.set(candidate.x, candidate.y, "sand");
       return true;
     }
@@ -77,8 +88,8 @@ function parsePosition(input: string): Position {
   return { x, y };
 }
 
-function parse(input: string): Board {
-  const board = new Board();
+function parse(input: string, hasFloor: boolean): Board {
+  const board = new Board(hasFloor);
   board.set(500, 0, "source");
   for (const line of input.trimEnd().split("\n")) {
     const positions = line.split(" -> ").map(parsePosition);
@@ -104,25 +115,29 @@ function parse(input: string): Board {
       current = next;
     }
   }
+  board.setLowestY();
   return board;
 }
 
 function part1(input: string): number {
-  const board = parse(input);
+  const board = parse(input, false);
   while (board.step()) {
     // run until nothing changes
   }
   return board.countSand();
 }
 
-// function part2(input: string): number {
-//   const board = parse(input);
-//   throw new Error("TODO");
-// }
+function part2(input: string): number {
+  const board = parse(input, true);
+  while (board.step()) {
+    // run until nothing changes
+  }
+  return board.countSand();
+}
 
 if (import.meta.main) {
   runPart(2022, 14, 1, part1);
-  // runPart(2022, 14, 2, part2);
+  runPart(2022, 14, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -134,6 +149,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 24);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 93);
+});
