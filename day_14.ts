@@ -1,3 +1,4 @@
+import { parse } from "https://deno.land/std@0.167.0/flags/mod.ts";
 import { assertEquals } from "https://deno.land/std@0.167.0/testing/asserts.ts";
 import { runPart } from "https://deno.land/x/aocd@v1.3.0/mod.ts";
 
@@ -74,6 +75,32 @@ class Board {
         row.reduce((sum, cellState) => sum + (cellState === "sand" ? 1 : 0), 0);
     }, 0);
   }
+
+  printToConsole() {
+    const minX = Math.min(
+      ...this.values.map((row) => Math.min(...Object.keys(row).map(Number))),
+    ) - 2;
+    const maxX = Math.max(
+      ...this.values.map((row) => Math.max(...Object.keys(row).map(Number))),
+    ) + 2;
+    for (let y = 0; y < this.values.length + 1; y++) {
+      const lineParts: string[] = [];
+      for (let x = minX; x <= maxX; x++) {
+        const cell = this.get(x, y);
+        if (cell === undefined) {
+          lineParts.push(".");
+        } else if (cell === "wall") {
+          lineParts.push("#");
+        } else if (cell === "sand") {
+          lineParts.push("o");
+        } else if (cell === "source") {
+          lineParts.push("+");
+        }
+      }
+      const line = lineParts.join("");
+      console.log(line);
+    }
+  }
 }
 
 interface Position {
@@ -88,7 +115,7 @@ function parsePosition(input: string): Position {
   return { x, y };
 }
 
-function parse(input: string, hasFloor: boolean): Board {
+function parseBoard(input: string, hasFloor: boolean): Board {
   const board = new Board(hasFloor);
   board.set(500, 0, "source");
   for (const line of input.trimEnd().split("\n")) {
@@ -120,7 +147,7 @@ function parse(input: string, hasFloor: boolean): Board {
 }
 
 function part1(input: string): number {
-  const board = parse(input, false);
+  const board = parseBoard(input, false);
   while (board.step()) {
     // run until nothing changes
   }
@@ -128,9 +155,12 @@ function part1(input: string): number {
 }
 
 function part2(input: string): number {
-  const board = parse(input, true);
+  const board = parseBoard(input, true);
   while (board.step()) {
     // run until nothing changes
+  }
+  if (parse(Deno.args).printToConsole) {
+    board.printToConsole();
   }
   return board.countSand();
 }
