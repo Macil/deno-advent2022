@@ -1,6 +1,6 @@
-import { assertEquals } from "https://deno.land/std@0.167.0/testing/asserts.ts";
-import { runPart } from "https://deno.land/x/aocd@v1.3.0/mod.ts";
-import { aStar } from "https://deno.land/x/lazy_pathfinding@v1.0.0/directed/a_star.ts";
+import { assertEquals } from "https://deno.land/std@0.185.0/testing/asserts.ts";
+import { runPart } from "https://deno.land/x/aocd@v1.3.1/mod.ts";
+import { aStar } from "https://deno.land/x/lazy_pathfinding@v1.0.1/directed/a_star.ts";
 
 type Pos = {
   x: number;
