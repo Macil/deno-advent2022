@@ -32,34 +32,71 @@ function parse(input: string): Reading[] {
   });
 }
 
+interface Interval {
+  start: number;
+  end: number;
+}
+
+function mergeIntervals(sortedIntervals: Interval[]): Interval[] {
+  const result: Interval[] = [];
+  let current: Interval | undefined;
+  for (const interval of sortedIntervals) {
+    if (!current) {
+      current = { ...interval };
+    } else {
+      if (interval.start <= current.end) {
+        current.end = Math.max(current.end, interval.end);
+      } else {
+        result.push(current);
+        current = { ...interval };
+      }
+    }
+  }
+  if (current) {
+    result.push(current);
+  }
+  return result;
+}
+
 function countPositionsThatCannnotBeBeaconInRow(
   readings: Reading[],
   row: number,
 ): number {
+  const coveredIntervalsInRow: Array<Interval> = mergeIntervals(
+    readings
+      .filter((reading) => {
+        const sensorRange = manhattanDistance(
+          reading.sensor,
+          reading.closestBeacon,
+        );
+        const distanceFromSensorToRow = Math.abs(reading.sensor.y - row);
+        return sensorRange >= distanceFromSensorToRow;
+      })
+      .map((reading) => {
+        const sensorRange = manhattanDistance(
+          reading.sensor,
+          reading.closestBeacon,
+        );
+        const distanceFromSensorToRow = Math.abs(reading.sensor.y - row);
+        const startInRow = reading.sensor.x - sensorRange +
+          distanceFromSensorToRow;
+        const endInRow = reading.sensor.x + sensorRange -
+          distanceFromSensorToRow;
+        return { start: startInRow, end: endInRow };
+      })
+      .sort((a, b) => a.start - b.start),
+  );
+  const coveredPositions = coveredIntervalsInRow.map((interval) =>
+    interval.end - interval.start + 1
+  ).reduce((a, b) => a + b, 0);
+
   const positionsInRowThatAreBeacon = new Set<number>();
-  const positionsInRowThatCannotBeBeacon = new Set<number>();
   for (const reading of readings) {
     if (reading.closestBeacon.y === row) {
       positionsInRowThatAreBeacon.add(reading.closestBeacon.x);
     }
-
-    const distanceFromSensorToBeacon = manhattanDistance(
-      reading.sensor,
-      reading.closestBeacon,
-    );
-    const distanceFromSensorToRow = Math.abs(reading.sensor.y - row);
-    const startInRow = reading.sensor.x - distanceFromSensorToBeacon +
-      distanceFromSensorToRow;
-    const endInRow = reading.sensor.x + distanceFromSensorToBeacon -
-      distanceFromSensorToRow;
-    for (let x = startInRow; x <= endInRow; x++) {
-      positionsInRowThatCannotBeBeacon.add(x);
-    }
   }
-  for (const x of positionsInRowThatAreBeacon) {
-    positionsInRowThatCannotBeBeacon.delete(x);
-  }
-  return positionsInRowThatCannotBeBeacon.size;
+  return coveredPositions - positionsInRowThatAreBeacon.size;
 }
 
 function part1(input: string, row = 2000000): number {
@@ -83,15 +120,15 @@ function findUnknownBeacon(
   for (let y = coordinateLowerLimit; y <= coordinateUpperLimit; y++) {
     let x = coordinateLowerLimit;
     for (const reading of readingsSortedBySensorX) {
-      const range = manhattanDistance(
+      const sensorRange = manhattanDistance(
         reading.sensor,
         reading.closestBeacon,
       );
       const distanceFromSensorToRow = Math.abs(reading.sensor.y - y);
-      if (range >= distanceFromSensorToRow) {
-        const startInRow = reading.sensor.x - range +
+      if (sensorRange >= distanceFromSensorToRow) {
+        const startInRow = reading.sensor.x - sensorRange +
           distanceFromSensorToRow;
-        const endInRow = reading.sensor.x + range -
+        const endInRow = reading.sensor.x + sensorRange -
           distanceFromSensorToRow;
         if (x >= startInRow) {
           x = Math.max(x, endInRow + 1);
