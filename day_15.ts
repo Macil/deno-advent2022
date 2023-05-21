@@ -62,9 +62,9 @@ function countPositionsThatCannnotBeBeaconInRow(
   return positionsInRowThatCannotBeBeacon.size;
 }
 
-function part1(input: string): number {
+function part1(input: string, row = 2000000): number {
   const readings = parse(input);
-  return countPositionsThatCannnotBeBeaconInRow(readings, 2000000);
+  return countPositionsThatCannnotBeBeaconInRow(readings, row);
 }
 
 // function part2(input: string): number {
@@ -95,8 +95,7 @@ Sensor at x=20, y=1: closest beacon is at x=15, y=3
 `;
 
 Deno.test("part1", () => {
-  const readings = parse(TEST_INPUT);
-  assertEquals(countPositionsThatCannnotBeBeaconInRow(readings, 10), 26);
+  assertEquals(part1(TEST_INPUT, 10), 26);
 });
 
 // Deno.test("part2", () => {
