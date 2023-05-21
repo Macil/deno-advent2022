@@ -67,14 +67,56 @@ function part1(input: string, row = 2000000): number {
   return countPositionsThatCannnotBeBeaconInRow(readings, row);
 }
 
-// function part2(input: string): number {
-//   const readings = parse(input);
-//   throw new Error("TODO");
-// }
+function tuningFrequency(p: Position): number {
+  return p.x * 4000000 + p.y;
+}
+
+function findUnknownBeacon(
+  readings: Reading[],
+  coordinateLowerLimit: number,
+  coordinateUpperLimit: number,
+): Position | undefined {
+  const readingsSortedBySensorX = readings.slice().sort((a, b) =>
+    a.sensor.x - b.sensor.x
+  );
+
+  for (let y = coordinateLowerLimit; y <= coordinateUpperLimit; y++) {
+    let x = coordinateLowerLimit;
+    for (const reading of readingsSortedBySensorX) {
+      const range = manhattanDistance(
+        reading.sensor,
+        reading.closestBeacon,
+      );
+      const distanceFromSensorToRow = Math.abs(reading.sensor.y - y);
+      if (range >= distanceFromSensorToRow) {
+        const startInRow = reading.sensor.x - range +
+          distanceFromSensorToRow;
+        const endInRow = reading.sensor.x + range -
+          distanceFromSensorToRow;
+        if (x >= startInRow) {
+          x = Math.max(x, endInRow + 1);
+        }
+      }
+    }
+    if (x <= coordinateUpperLimit) {
+      return { x, y };
+    }
+  }
+  return undefined;
+}
+
+function part2(input: string, coordinateUpperLimit = 4000000): number {
+  const readings = parse(input);
+  const unknownBeacon = findUnknownBeacon(readings, 0, coordinateUpperLimit);
+  if (!unknownBeacon) {
+    throw new Error("Failed to find beacon");
+  }
+  return tuningFrequency(unknownBeacon);
+}
 
 if (import.meta.main) {
   runPart(2022, 15, 1, part1);
-  // runPart(2022, 15, 2, part2);
+  runPart(2022, 15, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -98,6 +140,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT, 10), 26);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT, 20), 56000011);
+});
