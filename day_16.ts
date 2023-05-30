@@ -1,10 +1,10 @@
-import { assertEquals } from "https://deno.land/std@0.185.0/testing/asserts.ts";
-import { runPart } from "https://deno.land/x/aocd@v1.3.1/mod.ts";
+import { assertEquals } from "https://deno.land/std@0.190.0/testing/asserts.ts";
+import { runPart } from "https://deno.land/x/aocd@v1.3.2/mod.ts";
 import {
   buildPath,
   dijkstraAll,
   DijkstraEncounteredNodeEntry,
-} from "https://deno.land/x/lazy_pathfinding@v1.1.0/directed/dijkstra.ts";
+} from "https://deno.land/x/lazy_pathfinding@v1.1.1/directed/dijkstra.ts";
 interface Valve {
   name: string;
   flowRate: number;

@@ -1,5 +1,5 @@
-import { assertEquals } from "https://deno.land/std@0.185.0/testing/asserts.ts";
-import { runPart } from "https://deno.land/x/aocd@v1.3.1/mod.ts";
+import { assertEquals } from "https://deno.land/std@0.190.0/testing/asserts.ts";
+import { runPart } from "https://deno.land/x/aocd@v1.3.2/mod.ts";
 
 // the first item in the list is the item at the bottom of the stack
 type Stack = string[];

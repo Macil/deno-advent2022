@@ -1,6 +1,6 @@
-import { chunk } from "https://deno.land/std@0.185.0/collections/chunk.ts";
-import { assertEquals } from "https://deno.land/std@0.185.0/testing/asserts.ts";
-import { runPart } from "https://deno.land/x/aocd@v1.3.1/mod.ts";
+import { chunk } from "https://deno.land/std@0.190.0/collections/chunk.ts";
+import { assertEquals } from "https://deno.land/std@0.190.0/testing/asserts.ts";
+import { runPart } from "https://deno.land/x/aocd@v1.3.2/mod.ts";
 
 type RucksackCompartments = [string, string];
 
