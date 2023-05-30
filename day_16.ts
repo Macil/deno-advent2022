@@ -5,13 +5,42 @@ import {
   dijkstraAll,
   DijkstraEncounteredNodeEntry,
 } from "https://deno.land/x/lazy_pathfinding@v1.1.1/directed/dijkstra.ts";
+import { memoizy } from "https://deno.land/x/memoizy@1.0.0/mod.ts";
+
 interface Valve {
   name: string;
   flowRate: number;
   tunnels: string[];
 }
 
-function parse(input: string): Map<string, Valve> {
+class World {
+  constructor(private readonly valves: ReadonlyMap<string, Valve>) {
+  }
+
+  getValve(name: string): Valve {
+    const valve = this.valves.get(name);
+    if (!valve) {
+      throw new Error(`No valve named ${name}`);
+    }
+    return valve;
+  }
+
+  readonly encounteredNodesFromNode = memoizy((
+    position: string,
+  ): ReadonlyMap<unknown, DijkstraEncounteredNodeEntry<string, number>> => {
+    return dijkstraAll<string, number>({
+      start: position,
+      successors: (v) => {
+        return this.getValve(v).tunnels.map((x) => [x, 1]);
+      },
+      key: (v) => v,
+      // Subtract 1 because we don't want to count the time it takes to open the valve.
+      maxCost: 29,
+    });
+  });
+}
+
+const parse = memoizy((input: string): World => {
   const valves: Valve[] = input.trimEnd().split("\n").map((line) => {
     const m =
       /^Valve (?<name>\w+) has flow rate=(?<flowRate>\d+); tunnels? leads? to valves? (?<tunnels>.+)$/
@@ -27,8 +56,8 @@ function parse(input: string): Map<string, Valve> {
       tunnels: m.groups!.tunnels.split(", "),
     };
   });
-  return new Map(valves.map((v) => [v.name, v]));
-}
+  return new World(new Map(valves.map((v) => [v.name, v])));
+});
 
 interface State {
   position: string;
@@ -43,31 +72,11 @@ interface Move {
   target: string;
 }
 
-const cachedEncounteredNodesFromNode = new Map<
-  string,
-  Map<unknown, DijkstraEncounteredNodeEntry<string, number>>
->();
-
 function* findMovesFromState(
-  world: ReadonlyMap<string, Valve>,
+  world: World,
   state: State,
 ): Iterable<Move> {
-  let encounteredNodes = cachedEncounteredNodesFromNode.get(state.position);
-  if (!encounteredNodes) {
-    encounteredNodes = dijkstraAll<string, number>({
-      start: state.position,
-      successors(v) {
-        return world.get(v)!.tunnels.map((x) => [x, 1]);
-      },
-      key: (v) => v,
-      // Subtract 1 because we don't want to count the time it takes to open the valve.
-      // Needs to be fixed as the highest possible value instead of `state.timeLeft - 1`
-      // because this is cached for future runs where we might have more time left.
-      // (If we did a breadth-first search, we could use `state.timeLeft - 1`.)
-      maxCost: 29,
-    });
-    cachedEncounteredNodesFromNode.set(state.position, encounteredNodes);
-  }
+  const encounteredNodes = world.encounteredNodesFromNode(state.position);
   for (const entry of encounteredNodes.values()) {
     if (
       entry.node === state.position || state.openValves.includes(entry.node)
@@ -76,7 +85,7 @@ function* findMovesFromState(
     }
     const path = buildPath(entry.node, encounteredNodes);
     const reward = (state.timeLeft - path.length) *
-      world.get(entry.node)!.flowRate;
+      world.getValve(entry.node).flowRate;
 
     // subtract 1 because this counts the current node but add 1 to account
     // for the time it takes to open the valve.
@@ -93,7 +102,7 @@ function* findMovesFromState(
 }
 
 function* nextStates(
-  world: ReadonlyMap<string, Valve>,
+  world: World,
   start: State,
 ): Iterable<State> {
   for (const move of findMovesFromState(world, start)) {
@@ -108,32 +117,93 @@ function* nextStates(
   }
 }
 
+function max<T>(
+  iterable: Iterable<T>,
+  compareFn: (a: T, b: T) => number,
+): T | undefined {
+  let candidate: T | undefined = undefined;
+  for (const item of iterable) {
+    if (candidate === undefined || compareFn(item, candidate) > 0) {
+      candidate = item;
+    }
+  }
+  return candidate;
+}
+
 function part1(input: string): number {
   const world = parse(input);
+  const bestState = max(
+    nextStates(world, {
+      position: "AA",
+      openValves: [],
+      timeLeft: 30,
+      totalPressureReleased: 0,
+    }),
+    (a, b) => a.totalPressureReleased - b.totalPressureReleased,
+  );
+  return bestState!.totalPressureReleased;
+}
 
-  let bestState: State = {
-    position: "AA",
-    openValves: [],
-    timeLeft: 30,
-    totalPressureReleased: 0,
-  };
+function part2(input: string): number {
+  const world = parse(input);
+  const bestStateAlone = max(
+    nextStates(world, {
+      position: "AA",
+      openValves: [],
+      timeLeft: 26,
+      totalPressureReleased: 0,
+    }),
+    (a, b) => a.totalPressureReleased - b.totalPressureReleased,
+  )!;
+  const elephantAfterBestStateAlone = max(
+    nextStates(world, {
+      position: "AA",
+      openValves: bestStateAlone.openValves,
+      timeLeft: 26,
+      totalPressureReleased: bestStateAlone.totalPressureReleased,
+    }),
+    (a, b) => a.totalPressureReleased - b.totalPressureReleased,
+  ) ?? bestStateAlone;
+  const elephantPressureReleasedAfterBestStateAlone =
+    elephantAfterBestStateAlone.totalPressureReleased -
+    bestStateAlone.totalPressureReleased;
 
-  for (const state of nextStates(world, bestState)) {
-    if (state.totalPressureReleased > bestState.totalPressureReleased) {
-      bestState = state;
+  let bestState = elephantAfterBestStateAlone;
+  for (
+    const state of nextStates(world, {
+      position: "AA",
+      openValves: [],
+      timeLeft: 26,
+      totalPressureReleased: 0,
+    })
+  ) {
+    if (
+      state.totalPressureReleased > elephantPressureReleasedAfterBestStateAlone
+    ) {
+      const elephantAfterState = max(
+        nextStates(world, {
+          position: "AA",
+          openValves: state.openValves,
+          timeLeft: 26,
+          totalPressureReleased: state.totalPressureReleased,
+        }),
+        (a, b) => a.totalPressureReleased - b.totalPressureReleased,
+      );
+      if (
+        elephantAfterState &&
+        elephantAfterState.totalPressureReleased >
+          bestState.totalPressureReleased
+      ) {
+        bestState = elephantAfterState;
+      }
     }
   }
   return bestState.totalPressureReleased;
 }
 
-// function part2(input: string): number {
-//   const world = parse(input);
-//   throw new Error("TODO");
-// }
-
 if (import.meta.main) {
   runPart(2022, 16, 1, part1);
-  // runPart(2022, 16, 2, part2);
+  runPart(2022, 16, 2, part2);
 }
 
 const TEST_INPUT = `\
@@ -153,6 +223,6 @@ Deno.test("part1", () => {
   assertEquals(part1(TEST_INPUT), 1651);
 });
 
-// Deno.test("part2", () => {
-//   assertEquals(part2(TEST_INPUT), 12);
-// });
+Deno.test("part2", () => {
+  assertEquals(part2(TEST_INPUT), 1707);
+});
