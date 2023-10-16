@@ -1,5 +1,5 @@
-import { assertEquals } from "https://deno.land/std@0.190.0/testing/asserts.ts";
-import { runPart } from "https://deno.land/x/aocd@v1.4.0/mod.ts";
+import { assertEquals } from "https://deno.land/std@0.204.0/assert/mod.ts";
+import { runPart } from "https://deno.land/x/aocd@v1.4.3/mod.ts";
 
 interface Coordinate {
   x: number;
