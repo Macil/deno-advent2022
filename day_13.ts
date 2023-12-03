@@ -1,5 +1,5 @@
-import { chunk } from "https://deno.land/std@0.204.0/collections/chunk.ts";
-import { assertEquals } from "https://deno.land/std@0.204.0/assert/mod.ts";
+import { chunk } from "https://deno.land/std@0.208.0/collections/chunk.ts";
+import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { runPart } from "https://deno.land/x/aocd@v1.5.1/mod.ts";
 
 type Packet = Array<number | Packet>;

@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.204.0/assert/mod.ts";
+import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { runPart } from "https://deno.land/x/aocd@v1.5.1/mod.ts";
 import { aStar } from "https://deno.land/x/lazy_pathfinding@v1.1.1/directed/a_star.ts";
 

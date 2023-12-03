@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.204.0/assert/mod.ts";
+import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
 import { runPart } from "https://deno.land/x/aocd@v1.5.1/mod.ts";
 
 // the first item in the list is the item at the bottom of the stack
