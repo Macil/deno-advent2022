@@ -1,6 +1,6 @@
-import { parse } from "https://deno.land/std@0.208.0/flags/mod.ts";
-import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { runPart } from "https://deno.land/x/aocd@v1.5.1/mod.ts";
+import { parseArgs } from "@std/cli/parse-args";
+import { assertEquals } from "@std/assert";
+import { runPart } from "@macil/aocd";
 import { createCanvas } from "https://deno.land/x/canvas@v1.4.1/mod.ts";
 
 type CellState = undefined | "wall" | "sand" | "source";
@@ -202,10 +202,11 @@ async function part2(input: string): Promise<number> {
   while (board.step()) {
     // run until nothing changes
   }
-  if (parse(Deno.args).print) {
+  const parsedArgs = parseArgs(Deno.args);
+  if (parsedArgs.print) {
     board.print();
   }
-  const filename = parse(Deno.args).saveToImage;
+  const filename = parsedArgs.saveToImage;
   if (typeof filename === "string") {
     await board.saveToImage(filename);
   }

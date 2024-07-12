@@ -1,5 +1,5 @@
-import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { runPart } from "https://deno.land/x/aocd@v1.5.1/mod.ts";
+import { assertEquals } from "@std/assert";
+import { runPart } from "@macil/aocd";
 
 /**
  * Array of rows, where each row is an array of booleans from left to right.

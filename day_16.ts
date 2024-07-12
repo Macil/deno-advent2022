@@ -1,11 +1,11 @@
-import { assertEquals } from "https://deno.land/std@0.208.0/assert/mod.ts";
-import { runPart } from "https://deno.land/x/aocd@v1.5.1/mod.ts";
+import { assertEquals } from "@std/assert";
+import { runPart } from "@macil/aocd";
 import {
   buildPath,
   dijkstraAll,
   DijkstraEncounteredNodeEntry,
-} from "https://deno.land/x/lazy_pathfinding@v1.1.1/directed/dijkstra.ts";
-import { memoizy } from "https://deno.land/x/memoizy@1.0.0/mod.ts";
+} from "lazy-pathfinding/directed/dijkstra";
+import { memoize } from "@korkje/memz";
 
 interface Valve {
   name: string;
@@ -25,7 +25,7 @@ class World {
     return valve;
   }
 
-  readonly encounteredNodesFromNode = memoizy((
+  readonly encounteredNodesFromNode = memoize((
     position: string,
   ): ReadonlyMap<unknown, DijkstraEncounteredNodeEntry<string, number>> => {
     return dijkstraAll<string, number>({
@@ -40,7 +40,7 @@ class World {
   });
 }
 
-const parse = memoizy((input: string): World => {
+const parse = memoize((input: string): World => {
   const valves: Valve[] = input.trimEnd().split("\n").map((line) => {
     const m =
       /^Valve (?<name>\w+) has flow rate=(?<flowRate>\d+); tunnels? leads? to valves? (?<tunnels>.+)$/
