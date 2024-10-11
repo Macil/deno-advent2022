@@ -1,7 +1,7 @@
 import { parseArgs } from "@std/cli/parse-args";
 import { assertEquals } from "@std/assert";
 import { runPart } from "@macil/aocd";
-import { createCanvas } from "https://deno.land/x/canvas@v1.4.1/mod.ts";
+import { createCanvas } from "https://deno.land/x/canvas@v1.4.2/mod.ts";
 
 type CellState = undefined | "wall" | "sand" | "source";
 
