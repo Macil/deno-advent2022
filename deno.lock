@@ -7,8 +7,7 @@
     "jsr:@cross/runtime@1": "1.1.0",
     "jsr:@cross/utils@0.7": "0.7.1",
     "jsr:@korkje/memz@0.1.3": "0.1.3",
-    "jsr:@korkje/memz@~0.1.3": "0.1.3",
-    "jsr:@macil/aocd@2": "2.0.0",
+    "jsr:@macil/aocd@^2.0.1": "2.0.1",
     "jsr:@std/assert@1": "1.0.6",
     "jsr:@std/cli@^1.0.6": "1.0.6",
     "jsr:@std/collections@^1.0.3": "1.0.8",
@@ -47,11 +46,11 @@
     "@korkje/memz@0.1.3": {
       "integrity": "32ebe1f6ae9f0476a6635c971bb5b278ecd747c65b0a6855834030ce874996a4"
     },
-    "@macil/aocd@2.0.0": {
-      "integrity": "857612c407d09bb7bcf6d05afde51799035c661dedf6420eda7110318e1dfa02",
+    "@macil/aocd@2.0.1": {
+      "integrity": "e90b03c3fb781648f892ed7937fe65afeb7ddce12beb5b01641f175a6e352c26",
       "dependencies": [
         "jsr:@cross/dir",
-        "jsr:@korkje/memz@0.1.3",
+        "jsr:@korkje/memz",
         "jsr:@std/cli"
       ]
     },
@@ -99,8 +98,8 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@korkje/memz@~0.1.3",
-      "jsr:@macil/aocd@2",
+      "jsr:@korkje/memz@0.1.3",
+      "jsr:@macil/aocd@^2.0.1",
       "jsr:@std/assert@1",
       "jsr:@std/cli@^1.0.6",
       "jsr:@std/collections@^1.0.3",
