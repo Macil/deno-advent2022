@@ -1,6 +1,7 @@
 import { parseArgs } from "@std/cli/parse-args";
 import { assertEquals } from "@std/assert";
 import { runPart } from "@macil/aocd";
+// deno-lint-ignore no-import-prefix
 import { createCanvas } from "https://deno.land/x/canvas@v1.4.2/mod.ts";
 
 type CellState = undefined | "wall" | "sand" | "source";
