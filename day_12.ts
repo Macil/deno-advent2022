@@ -1,6 +1,6 @@
 import { assertEquals } from "@std/assert";
 import { runPart } from "@macil/aocd";
-import { aStar } from "lazy-pathfinding/directed/a_star";
+import { aStar } from "@macil/pathfinding/directed/a_star";
 
 type Pos = {
   x: number;

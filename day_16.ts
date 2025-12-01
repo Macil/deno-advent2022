@@ -4,7 +4,7 @@ import {
   buildPath,
   dijkstraAll,
   DijkstraEncounteredNodeEntry,
-} from "lazy-pathfinding/directed/dijkstra";
+} from "@macil/pathfinding/directed/dijkstra";
 import { memoize } from "@korkje/memz";
 
 interface Valve {
@@ -27,8 +27,11 @@ class World {
 
   readonly encounteredNodesFromNode = memoize((
     position: string,
-  ): ReadonlyMap<unknown, DijkstraEncounteredNodeEntry<string, number>> => {
-    return dijkstraAll<string, number>({
+  ): ReadonlyMap<
+    string,
+    DijkstraEncounteredNodeEntry<string, number, string>
+  > => {
+    return dijkstraAll<string, number, string>({
       start: position,
       successors: (v) => {
         return this.getValve(v).tunnels.map((x) => [x, 1]);
